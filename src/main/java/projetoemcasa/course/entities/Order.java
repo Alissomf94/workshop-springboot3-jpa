@@ -2,18 +2,24 @@ package projetoemcasa.course.entities;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import projetoemcasa.course.entities.enums.OrderStatus;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import projetoemcasa.course.entities.enums.OrderStatus;
+
 
 @Entity
 @Table(name = "tb_Order")
@@ -27,22 +33,21 @@ public class Order implements Serializable {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "GMT")
 	private Instant date;
 
-	@JsonIgnore
+
 	@ManyToOne
 	@JoinColumn(name = "client_id")
 	private User client;
 	
+	
 	private Integer orderStatus;
+	
+	@OneToMany (mappedBy = "id.order")
+	private Set<OrderItem> items = new HashSet<>();
+	
+	@OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+	private Payment payment;
 	public Order() {
 
-	}
-
-	public OrderStatus getOrderStatus() {
-		return OrderStatus.valueof( orderStatus);
-	}
-
-	public void setOrderStatus(OrderStatus orderStatus) {
-		this.orderStatus = orderStatus.getCode();
 	}
 
 	public Order(Long id, Instant date, User client,OrderStatus orderStatus) {
@@ -50,6 +55,24 @@ public class Order implements Serializable {
 		this.date = date;
 		this.client = client;
 		setOrderStatus(orderStatus);
+	}
+	
+	public OrderStatus getOrderStatus() {
+		return OrderStatus.valueof(orderStatus);
+	}
+
+	public void setOrderStatus(OrderStatus orderStatus) {
+		this.orderStatus = orderStatus.getCode();
+	}
+	
+	
+	public Set<OrderItem> getItems() {
+		return items;
+	}
+
+
+	public void setItems(Set<OrderItem> items) {
+		this.items = items;
 	}
 
 	public Long getId() {
@@ -75,5 +98,27 @@ public class Order implements Serializable {
 	public void setClient(User client) {
 		this.client = client;
 	}
+
+	public Payment getPayment() {
+		return payment;
+	}
+
+	public void setPayment(Payment payment) {
+		this.payment = payment;
+	}
+	
+	public Double getTotal () {
+		
+		Double sum = 0.0;
+		
+		for (OrderItem item : items) {
+			
+			sum += item.GetSubTotal();		}
+		
+		return sum;
+	}
+	
+		
+	
 
 }

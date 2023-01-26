@@ -29,10 +29,11 @@ public class User implements Serializable {
 	private String phone;
 	private String password;
 	
-	@JsonIgnore
+	
 	@OneToMany(mappedBy = "client")
 	private List<Order> Orders = new ArrayList <>();
 	
+	@JsonIgnore
 	public List<Order> getOrders() {
 		return Orders;
 	}
